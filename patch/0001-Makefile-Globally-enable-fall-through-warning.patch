@@ -1,0 +1,62 @@
+From a035d552a93bb9ef6048733bb9f2a0dc857ff869 Mon Sep 17 00:00:00 2001
+From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+Date: Thu, 6 Jun 2019 19:46:17 -0500
+Subject: [PATCH] Makefile: Globally enable fall-through warning
+
+Now that all the fall-through warnings have been addressed in the
+kernel, enable the fall-through warning globally.
+
+Also, update the deprecated.rst file to include implicit fall-through
+as 'deprecated' so people can be pointed to a single location for
+justification.
+
+Cc: Masahiro Yamada <yamada.masahiro@socionext.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Michal Marek <michal.lkml@markovi.net>
+Cc: Kees Cook <keescook@chromium.org>
+Cc: linux-kbuild@vger.kernel.org
+Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
+---
+ Documentation/process/deprecated.rst | 14 ++++++++++++++
+ Makefile                             |  3 +++
+ 2 files changed, 17 insertions(+)
+
+diff --git a/Documentation/process/deprecated.rst b/Documentation/process/deprecated.rst
+index 49e0f64a3427..053b24a6dd38 100644
+--- a/Documentation/process/deprecated.rst
++++ b/Documentation/process/deprecated.rst
+@@ -119,3 +119,17 @@ array may exceed the remaining memory in the stack segment. This could
+ lead to a crash, possible overwriting sensitive contents at the end of the
+ stack (when built without `CONFIG_THREAD_INFO_IN_TASK=y`), or overwriting
+ memory adjacent to the stack (when built without `CONFIG_VMAP_STACK=y`)
++
++Implicit switch case fall-through
++---------------------------------
++The C language allows switch cases to "fall through" when
++a "break" statement is missing at the end of a case. This,
++however, introduces ambiguity in the code, as it's not always
++clear if the missing break is intentional or a bug. As there
++have been a long list of flaws `due to missing "break" statements
++<https://cwe.mitre.org/data/definitions/484.html>`_, we no longer allow
++"implicit fall-through". In order to identify an intentional fall-through
++case, we have adopted the marking used by static analyzers: a comment
++saying `/* Fall through */`. Once the C++17 `__attribute__((fallthrough))`
++is more widely handled by C compilers, static analyzers, and IDEs, we can
++switch to using that instead.
+diff --git a/Makefile b/Makefile
+index 9be5834073f8..bdf8eac51b07 100644
+--- a/Makefile
++++ b/Makefile
+@@ -843,6 +843,9 @@ NOSTDINC_FLAGS += -nostdinc -isystem $(shell $(CC) -print-file-name=include)
+ # warn about C99 declaration after statement
+ KBUILD_CFLAGS += -Wdeclaration-after-statement
+ 
++# Warn about unmarked fall-throughs in switch statement.
++KBUILD_CFLAGS += $(call cc-option,-Wimplicit-fallthrough=3,)
++
+ # Variable Length Arrays (VLAs) should not be used anywhere in the kernel
+ KBUILD_CFLAGS += -Wvla
+ 
+-- 
+2.43.0
+

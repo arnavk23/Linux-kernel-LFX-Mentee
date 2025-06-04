@@ -1,0 +1,25 @@
+From addc39171bf939c4bf09f47bf8893cc0d9107bd9 Mon Sep 17 00:00:00 2001
+From: Arnav Kapoor <kapoorarnav43@gmail.com>
+Date: Fri, 16 May 2025 15:44:12 +0530
+Subject: [PATCH] selftests: pidfd: fix grammar in test message
+
+---
+ tools/testing/selftests/pidfd/pidfd_open_test.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/tools/testing/selftests/pidfd/pidfd_open_test.c b/tools/testing/selftests/pidfd/pidfd_open_test.c
+index cd3de40e4977..b16796daecad 100644
+--- a/tools/testing/selftests/pidfd/pidfd_open_test.c
++++ b/tools/testing/selftests/pidfd/pidfd_open_test.c
+@@ -136,7 +136,7 @@ int main(int argc, char **argv)
+ 			strerror(errno));
+ 		goto on_error;
+ 	}
+-	ksft_test_result_pass("do not allow invalid pid test: passed\n");
++	ksft_test_result_pass("do not allow invalid pid test: Passed\n");
+ 
+ 	pidfd = sys_pidfd_open(getpid(), 1);
+ 	if (pidfd >= 0) {
+-- 
+2.43.0
+

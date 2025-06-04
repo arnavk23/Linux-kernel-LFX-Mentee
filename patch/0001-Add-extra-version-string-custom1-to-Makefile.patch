@@ -1,0 +1,25 @@
+From 53b635f3fe7523ea5c8880996c6c064c7fae82f0 Mon Sep 17 00:00:00 2001
+From: ArnavKapoor <arnav@kapoorarnav43@gmail.com>
+Date: Fri, 16 May 2025 00:25:44 +0530
+Subject: [PATCH 1/2] Add extra version string '-custom1' to Makefile
+
+---
+ Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Makefile b/Makefile
+index 0eb9e6c49b32..d11361ac871f 100644
+--- a/Makefile
++++ b/Makefile
+@@ -2,7 +2,7 @@
+ VERSION = 6
+ PATCHLEVEL = 15
+ SUBLEVEL = 0
+-EXTRAVERSION = -rc6
++EXTRAVERSION = -custom1
+ NAME = Baby Opossum Posse
+ 
+ # *DOCUMENTATION*
+-- 
+2.43.0
+
