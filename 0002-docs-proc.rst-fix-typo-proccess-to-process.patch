@@ -1,0 +1,26 @@
+From 40d2abd9fa8e333f5593243164f0a6794cc3ff8a Mon Sep 17 00:00:00 2001
+From: Arnav Kapoor <kapoorarnav43@gmail.com>
+Date: Fri, 16 May 2025 15:24:09 +0530
+Subject: [PATCH 2/2] docs: proc.rst: fix typo 'proccess' to 'process'
+
+Signed-off-by: Arnav Kapoor <kapoorarnav43@gmail.com>
+---
+ Documentation/filesystems/proc.rst | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Documentation/filesystems/proc.rst b/Documentation/filesystems/proc.rst
+index 2a17865dfe39..272d4ef1b134 100644
+--- a/Documentation/filesystems/proc.rst
++++ b/Documentation/filesystems/proc.rst
+@@ -75,7 +75,7 @@ additions and patches  are welcome and will  be added to this  document if you
+ mail them to Bodo.
+ 
+ We'd like  to  thank Alan Cox, Rik van Riel, and Alexey Kuznetsov and a lot of
+-other people for help compiling this documentation. We'd also like to extend a
++other people for helping to compile this documentation. We'd also like to extend a
+ special thank  you to Andi Kleen for documentation, which we relied on heavily
+ to create  this  document,  as well as the additional information he provided.
+ Thanks to  everybody  else  who contributed source or docs to the Linux kernel
+-- 
+2.43.0
+
