@@ -1,0 +1,40 @@
+[   12.386716] wlp0s20f3: authenticated
+[   12.387601] wlp0s20f3: associate with b0:95:75:88:da:11 (try 1/3)
+[   12.394601] wlp0s20f3: RX AssocResp from b0:95:75:88:da:11 (capab=0x11 status=0 aid=3)
+[   12.404312] wlp0s20f3: associated
+[   12.847138] systemd-journald[427]: /var/log/journal/e2ea3436776f4260a421baac1b4ade1f/user-1000.journal: Journal file uses a different sequence number ID, rotating.
+[   13.193554] audit: type=1400 audit(1747385118.397:237): apparmor="DENIED" operation="open" class="file" profile="snap-update-ns.snapd-desktop-integration" name="/proc/2483/maps" pid=2483 comm="5" requested_mask="r" denied_mask="r" fsuid=1000 ouid=0
+[   14.750220] rfkill: input handler disabled
+[   15.435950] vboxdrv: loading out-of-tree module taints kernel.
+[   15.435962] vboxdrv: module verification failed: signature and/or required key missing - tainting kernel
+[   15.449009] vboxdrv: Found 8 processor cores/threads
+[   15.464821] vboxdrv: TSC mode is Invariant, tentative frequency 2419184284 Hz
+[   15.464827] vboxdrv: Successfully loaded version 7.0.16_Ubuntu r162802 (interface 0x00330004)
+[   15.475367] VBoxNetFlt: Successfully started.
+[   15.484768] VBoxNetAdp: Successfully started.
+[   15.576312] audit: type=1400 audit(1747385120.780:238): apparmor="STATUS" operation="profile_load" profile="unconfined" name="docker-default" pid=3347 comm="apparmor_parser"
+[   15.601276] evm: overlay not supported
+[   15.662084] Initializing XFRM netlink socket
+[   16.115524] audit: type=1400 audit(1747385121.319:239): apparmor="DENIED" operation="capable" class="cap" profile="/snap/snapd/24505/usr/lib/snapd/snap-confine" pid=3895 comm="snap-confine" capability=12  capname="net_admin"
+[   16.115551] audit: type=1400 audit(1747385121.319:240): apparmor="DENIED" operation="capable" class="cap" profile="/snap/snapd/24505/usr/lib/snapd/snap-confine" pid=3895 comm="snap-confine" capability=38  capname="perfmon"
+[   16.120630] audit: type=1400 audit(1747385121.325:241): apparmor="DENIED" operation="open" class="file" profile="snap-update-ns.snapd-desktop-integration" name="/proc/3951/maps" pid=3951 comm="5" requested_mask="r" denied_mask="r" fsuid=1000 ouid=0
+[   16.463753] audit: type=1326 audit(1747385121.668:242): auid=1000 uid=1000 gid=1000 ses=2 subj=snap.snapd-desktop-integration.snapd-desktop-integration pid=3989 comm="snapd-desktop-i" exe="/snap/snapd-desktop-integration/253/usr/bin/snapd-desktop-integration" sig=0 arch=c000003e syscall=203 compat=0 ip=0x7d171ab44531 code=0x50000
+[   16.463761] audit: type=1326 audit(1747385121.668:243): auid=1000 uid=1000 gid=1000 ses=2 subj=snap.snapd-desktop-integration.snapd-desktop-integration pid=3989 comm="snapd-desktop-i" exe="/snap/snapd-desktop-integration/253/usr/bin/snapd-desktop-integration" sig=0 arch=c000003e syscall=141 compat=0 ip=0x7d171abc378b code=0x50000
+[   16.467402] audit: type=1326 audit(1747385121.671:244): auid=1000 uid=1000 gid=1000 ses=2 subj=snap.snapd-desktop-integration.snapd-desktop-integration pid=3989 comm="snapd-desktop-i" exe="/snap/snapd-desktop-integration/253/usr/bin/snapd-desktop-integration" sig=0 arch=c000003e syscall=203 compat=0 ip=0x7d171ab44531 code=0x50000
+[   16.467410] audit: type=1326 audit(1747385121.671:245): auid=1000 uid=1000 gid=1000 ses=2 subj=snap.snapd-desktop-integration.snapd-desktop-integration pid=3989 comm="snapd-desktop-i" exe="/snap/snapd-desktop-integration/253/usr/bin/snapd-desktop-integration" sig=0 arch=c000003e syscall=203 compat=0 ip=0x7d171ab44531 code=0x50000
+[   16.467494] audit: type=1326 audit(1747385121.671:246): auid=1000 uid=1000 gid=1000 ses=2 subj=snap.snapd-desktop-integration.snapd-desktop-integration pid=3989 comm="snapd-desktop-i" exe="/snap/snapd-desktop-integration/253/usr/bin/snapd-desktop-integration" sig=0 arch=c000003e syscall=203 compat=0 ip=0x7d171ab44531 code=0x50000
+[   16.467496] audit: type=1326 audit(1747385121.671:247): auid=1000 uid=1000 gid=1000 ses=2 subj=snap.snapd-desktop-integration.snapd-desktop-integration pid=3989 comm="snapd-desktop-i" exe="/snap/snapd-desktop-integration/253/usr/bin/snapd-desktop-integration" sig=0 arch=c000003e syscall=203 compat=0 ip=0x7d171ab44531 code=0x50000
+[   16.467591] audit: type=1326 audit(1747385121.671:248): auid=1000 uid=1000 gid=1000 ses=2 subj=snap.snapd-desktop-integration.snapd-desktop-integration pid=3989 comm="snapd-desktop-i" exe="/snap/snapd-desktop-integration/253/usr/bin/snapd-desktop-integration" sig=0 arch=c000003e syscall=203 compat=0 ip=0x7d171ab44531 code=0x50000
+[   24.482678] kauditd_printk_skb: 10 callbacks suppressed
+[   24.482684] audit: type=1400 audit(1747385129.686:259): apparmor="DENIED" operation="capable" class="cap" profile="/snap/snapd/24505/usr/lib/snapd/snap-confine" pid=4685 comm="snap-confine" capability=12  capname="net_admin"
+[   24.482692] audit: type=1400 audit(1747385129.686:260): apparmor="DENIED" operation="capable" class="cap" profile="/snap/snapd/24505/usr/lib/snapd/snap-confine" pid=4685 comm="snap-confine" capability=38  capname="perfmon"
+[   24.487696] audit: type=1400 audit(1747385129.692:261): apparmor="DENIED" operation="capable" class="cap" profile="/snap/snapd/24505/usr/lib/snapd/snap-confine" pid=4685 comm="snap-confine" capability=4  capname="fsetid"
+[   24.626130] audit: type=1400 audit(1747385129.830:262): apparmor="DENIED" operation="open" class="file" profile="snap-update-ns.firefox" name="/usr/local/share/" pid=4713 comm="5" requested_mask="r" denied_mask="r" fsuid=0 ouid=0
+[   24.721055] audit: type=1400 audit(1747385129.924:263): apparmor="DENIED" operation="open" class="file" profile="snap-update-ns.firefox" name="/proc/4723/maps" pid=4723 comm="5" requested_mask="r" denied_mask="r" fsuid=1000 ouid=0
+[   26.258899] audit: type=1107 audit(1747385131.463:264): pid=1118 uid=101 auid=4294967295 ses=4294967295 subj=unconfined msg='apparmor="DENIED" operation="dbus_method_call"  bus="system" path="/org/freedesktop/timedate1" interface="org.freedesktop.DBus.Properties" member="GetAll" mask="send" name=":1.34" pid=4685 label="snap.firefox.firefox" peer_pid=1931 peer_label="unconfined"
+                exe="/usr/bin/dbus-daemon" sauid=101 hostname=? addr=? terminal=?'
+[  310.939998] audit: type=1107 audit(1747385415.831:265): pid=1118 uid=101 auid=4294967295 ses=4294967295 subj=unconfined msg='apparmor="DENIED" operation="dbus_method_call"  bus="system" path="/org/freedesktop/timedate1" interface="org.freedesktop.DBus.Properties" member="GetAll" mask="send" name=":1.139" pid=4685 label="snap.firefox.firefox" peer_pid=8417 peer_label="unconfined"
+                exe="/usr/bin/dbus-daemon" sauid=101 hostname=? addr=? terminal=?'
+[  629.117781] Hello World: Kernel module loaded.
+[  649.333232] Goodbye World: Kernel module unloaded.
+[  809.206711] Hello World: Kernel module loaded.

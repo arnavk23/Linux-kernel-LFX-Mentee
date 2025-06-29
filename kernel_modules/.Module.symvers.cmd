@@ -1,0 +1,1 @@
+savedcmd_/home/arnav/Desktop/linux_mainline/kernel_modules/hello/Module.symvers :=  scripts/mod/modpost -M -m -a      -o /home/arnav/Desktop/linux_mainline/kernel_modules/hello/Module.symvers -T /home/arnav/Desktop/linux_mainline/kernel_modules/hello/modules.order -i Module.symvers -e 
