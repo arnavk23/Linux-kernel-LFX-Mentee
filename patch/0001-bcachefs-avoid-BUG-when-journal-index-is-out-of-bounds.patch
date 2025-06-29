@@ -1,0 +1,58 @@
+From 56f5b5e4abcde123456789012345678901234567 Mon Sep 17 00:00:00 2001
+From: Arnav Kapoor <kapoor...@gmail.com>
+Date: Sat, 29 Jun 2025 17:05:00 +0000
+Subject: [PATCH] bcachefs: avoid BUG when journal index is out of bounds
+
+Replace BUG_ON(*idx > keys->nr) with a proper bounds check.  
+Log an error and safely return NULL if idx is invalid, instead of crashing.
+
+Fixes a kernel BUG triggered by syzbot when calling
+bch2_journal_keys_peek_prev_min with invalid idx.
+
+Reported-by: syzbot+5e43fb...@syzkaller.appspotmail.com
+Signed-off-by: Arnav Kapoor <kapoor...@gmail.com>
+---
+ fs/bcachefs/btree_journal_iter.c | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/fs/bcachefs/btree_journal_iter.c b/fs/bcachefs/btree_journal_iter.c
+index 0123456789ab..abcdef012345 100644
+--- a/fs/bcachefs/btree_journal_iter.c
++++ b/fs/bcachefs/btree_journal_iter.c
+@@
+ struct bkey_i *bch2_journal_keys_peek_prev_min(struct bch_fs *c, enum btree_id btree_id,
+ 					      unsigned level, struct bpos pos,
+ 					      struct bpos end_pos, size_t *idx)
+ {
+ 	struct journal_keys *keys = &c->journal_keys;
+ 	unsigned iters = 0;
+ 	struct journal_key *k;
+ 
+-	BUG_ON(*idx > keys->nr);
++	if (unlikely(*idx > keys->nr)) {
++		pr_err("bch2_journal_keys_peek_prev_min: invalid idx %zu > nr %zu\n",
++		       *idx, keys->nr);
++		return NULL;
++	}
++
++	if (!keys->nr)
++		return NULL;
+ 
+ search:
+ 	if (!*idx)
+ 		*idx = __bch2_journal_key_search(keys, btree_id, level, pos);
+ 
+ 	while (*idx &&
+ 	       __journal_key_cmp(btree_id, level, end_pos, idx_to_key(keys, *idx - 1)) <= 0) {
+ 		(*idx)++;
+ 		iters++;
+ 		if (iters == 10) {
+ 			*idx = 0;
+ 			goto search;
+ 		}
+ 	}
+ 
+ 	return (*idx && *idx <= keys->nr) ? idx_to_key(keys, *idx - 1) : NULL;
+ }
+-- 
+2.40.1
