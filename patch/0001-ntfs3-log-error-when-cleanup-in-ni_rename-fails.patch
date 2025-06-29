@@ -1,0 +1,33 @@
+From 00325fe8a9658ef0d9e0082dd98c09adc01875fa Mon Sep 17 00:00:00 2001
+From: Arnav Kapoor <kapoorarnav43@gmail.com>
+Date: Sun, 29 Jun 2025 15:29:27 +0530
+Subject: [PATCH] ntfs3: log error when cleanup in ni_rename fails
+
+If ni_remove_name fails and undoing ni_add_name also fails,
+add an error log so the failure is visible.
+
+Reported-by: syzbot+b0373017f711c06ada64@syzkaller.appspotmail.com
+Signed-off-by: Arnav Kapoor <kapoorarnav43@gmail.com>
+---
+ fs/ntfs3/frecord.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/fs/ntfs3/frecord.c b/fs/ntfs3/frecord.c
+index b7a83200f2cc..8e9d2ea4e37e 100644
+--- a/fs/ntfs3/frecord.c
++++ b/fs/ntfs3/frecord.c
+@@ -3027,8 +3027,10 @@ int ni_rename(struct ntfs_inode *dir_ni, struct ntfs_inode *new_dir_ni,
+ 	err = ni_add_name(new_dir_ni, ni, new_de);
+ 	if (!err) {
+ 		err = ni_remove_name(dir_ni, ni, de, &de2, &undo);
+-		if (err && ni_remove_name(new_dir_ni, ni, new_de, &de2, &undo))
++		if (err && ni_remove_name(new_dir_ni, ni, new_de, &de2, &undo)) {
++			ntfs_err(sb, "ni_rename: failed to clean up after add_name failure");
+ 			*is_bad = true;
++		}
+ 	}
+ 
+ 	/*
+-- 
+2.43.0
+
