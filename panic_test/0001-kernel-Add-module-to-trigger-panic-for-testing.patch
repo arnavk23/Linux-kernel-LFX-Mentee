@@ -1,0 +1,43 @@
+From b7ca635017cc6810a2456df0097e8a9c4d3c7b10 Mon Sep 17 00:00:00 2001
+From: Arnav Kapoor <kapoorarnav43@gmail.com>
+Date: Fri, 16 May 2025 16:04:49 +0530
+Subject: [PATCH] kernel: Add module to trigger panic for testing
+
+Signed-off-by: Arnav Kapoor <kapoorarnav43@gmail.com>
+---
+ panic_test/panic_module.c | 23 +++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
+ create mode 100644 panic_test/panic_module.c
+
+diff --git a/panic_test/panic_module.c b/panic_test/panic_module.c
+new file mode 100644
+index 000000000000..bd294a37befb
+--- /dev/null
++++ b/panic_test/panic_module.c
+@@ -0,0 +1,23 @@
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/init.h>
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Arnav Kapoor");
++MODULE_DESCRIPTION("A module to panic the kernel for testing purposes");
++MODULE_VERSION("0.1");
++
++static int __init panic_init(void)
++{
++    pr_emerg("Triggering kernel panic for testing...\n");
++    panic("Kernel panic triggered by test module!\n");
++    return 0;
++}
++
++static void __exit panic_exit(void)
++{
++    pr_info("Panic module unloaded (shouldn't get here).\n");
++}
++
++module_init(panic_init);
++module_exit(panic_exit);
+-- 
+2.43.0
+

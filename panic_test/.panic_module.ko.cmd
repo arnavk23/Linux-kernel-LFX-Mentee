@@ -1,0 +1,1 @@
+savedcmd_/home/arnav/Desktop/linux_mainline/panic_test/panic_module.ko := ld -r -m elf_x86_64 -z noexecstack --no-warn-rwx-segments --build-id=sha1  -T scripts/module.lds -o /home/arnav/Desktop/linux_mainline/panic_test/panic_module.ko /home/arnav/Desktop/linux_mainline/panic_test/panic_module.o /home/arnav/Desktop/linux_mainline/panic_test/panic_module.mod.o
