@@ -1,0 +1,66 @@
+From: Arnav Kapoor <kapoorarnnav43@gmail.com>
+Date: Sat, 13 Jul 2025 00:00:00 +0000
+Subject: [PATCH] openvswitch: Fix static key underflow in ovs_dp_change error path
+
+The syzbot report shows a WARNING in static_key_dec_not_one() caused by
+an underflow of the tc_skb_ext_tc static key. This occurs when 
+tc_skb_ext_tc_disable() is called more times than tc_skb_ext_tc_enable().
+
+The issue is in ovs_dp_change() where dp->user_features is updated before
+all validation and operations are complete. If ovs_dp_set_upcall_portids()
+fails after dp->user_features has been updated to include 
+OVS_DP_F_TC_RECIRC_SHARING, the function returns an error but the 
+user_features field retains the new value.
+
+Later, when __dp_destroy() is called during cleanup, it sees the 
+OVS_DP_F_TC_RECIRC_SHARING flag set and calls tc_skb_ext_tc_disable().
+However, tc_skb_ext_tc_enable() was never called due to the early return,
+causing an underflow of the static key reference count.
+
+The problematic sequence is:
+1. ovs_dp_change() sets dp->user_features = user_features (including TC_RECIRC_SHARING)
+2. ovs_dp_set_upcall_portids() fails and function returns error
+3. tc_skb_ext_tc static key operations are skipped due to early return
+4. Later __dp_destroy() sees TC_RECIRC_SHARING flag and calls tc_skb_ext_tc_disable()
+5. Static key underflows since enable was never called
+
+Fix this by moving the dp->user_features assignment after all operations
+that can fail, ensuring the datapath state is only updated when all
+operations succeed. Also fix the condition check to use the local
+user_features variable instead of the not-yet-updated dp->user_features.
+
+Reported-by: syzbot+0d84405982752c58ff64@syzkaller.appspotmail.com
+Link: https://syzkaller.appspot.com/bug?extid=0d84405982752c58ff64
+Fixes: commit that introduced OVS_DP_F_TC_RECIRC_SHARING feature
+Cc: stable@vger.kernel.org
+Signed-off-by: Arnav Kapoor <kapoorarnnav43@gmail.com>
+---
+ net/openvswitch/datapath.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/net/openvswitch/datapath.c b/net/openvswitch/datapath.c
+index 5d548eda742d..f8a6cd71f467 100644
+--- a/net/openvswitch/datapath.c
++++ b/net/openvswitch/datapath.c
+@@ -1733,9 +1733,7 @@ static int ovs_dp_change(struct datapath *dp, struct nlattr *a[])
+ 			return err;
+ 	}
+ 
+-	dp->user_features = user_features;
+-
+-	if (dp->user_features & OVS_DP_F_DISPATCH_UPCALL_PER_CPU &&
++	if (user_features & OVS_DP_F_DISPATCH_UPCALL_PER_CPU &&
+ 	    a[OVS_DP_ATTR_PER_CPU_PIDS]) {
+ 		/* Upcall Netlink Port IDs have been updated */
+ 		err = ovs_dp_set_upcall_portids(dp,
+@@ -1744,6 +1742,8 @@ static int ovs_dp_change(struct datapath *dp, struct nlattr *a[])
+ 			return err;
+ 	}
+ 
++	dp->user_features = user_features;
++
+ 	if ((dp->user_features & OVS_DP_F_TC_RECIRC_SHARING) &&
+ 	    !(old_features & OVS_DP_F_TC_RECIRC_SHARING))
+ 		tc_skb_ext_tc_enable();
+-- 
+2.34.1
