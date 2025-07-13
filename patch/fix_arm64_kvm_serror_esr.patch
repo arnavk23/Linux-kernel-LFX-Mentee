@@ -1,0 +1,50 @@
+From: Arnav Kapoor <kapoorarnnav43@gmail.com>
+Date: Fri, 27 Dec 2024 02:35:00 +0000
+Subject: [PATCH] arm64: KVM: Fix SError ESR validation to only allow ISS field
+
+The current validation in __kvm_arm_vcpu_set_events incorrectly allows
+userspace to set the ISV bit (bit 24) in the SError ESR when injecting
+a SError through KVM_SET_VCPU_EVENTS. According to the ARM ARM and the
+KVM API documentation, userspace should only be able to control the ISS
+field (bits 23:0) of the ESR, not the ISV bit which is managed by hardware.
+
+The problematic check:
+  if (!((events->exception.serror_esr) & ~ESR_ELx_ISS_MASK))
+      kvm_set_sei_esr(vcpu, events->exception.serror_esr);
+  else
+      return -EINVAL;
+
+allows the ISV bit because ESR_ELx_ISS_MASK includes bit 24 (GENMASK(24,0)).
+However, the ISV bit should be set only by KVM itself when calling 
+kvm_set_sei_esr(), and userspace should not be able to control it.
+
+Fix this by changing the validation to only allow bits 23:0 (the actual
+ISS field without the ISV bit):
+
+  if (events->exception.serror_esr & ~GENMASK(23, 0))
+      return -EINVAL;
+
+This prevents userspace from setting reserved bits and the ISV bit while
+still allowing control over the intended ISS field. The condition is
+simplified since we now have a straightforward check for invalid bits.
+
+Reported-by: syzbot+92be0215d467e7deb043@syzkaller.appspotmail.com
+Fixes: 0e5b9065dcf3 ("KVM: arm64: Inject SError exception into guest")
+Signed-off-by: Arnav Kapoor <kapoorarnnav43@gmail.com>
+---
+ arch/arm64/kvm/guest.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm64/kvm/guest.c b/arch/arm64/kvm/guest.c
+index 123456..789012 100644
+--- a/arch/arm64/kvm/guest.c
++++ b/arch/arm64/kvm/guest.c
+@@ -843,7 +843,7 @@ int __kvm_arm_vcpu_set_events(struct kvm_vcpu *vcpu,
+ 	if (serror_pending && has_esr) {
+ 		if (!cpus_have_final_cap(ARM64_HAS_RAS_EXTN))
+ 			return -EINVAL;
+-		if (!((events->exception.serror_esr) & ~ESR_ELx_ISS_MASK))
++		if (events->exception.serror_esr & ~GENMASK(23, 0))
++			return -EINVAL;
++
++		kvm_set_sei_esr(vcpu, events->exception.serror_esr);

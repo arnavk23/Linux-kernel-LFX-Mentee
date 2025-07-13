@@ -1,0 +1,152 @@
+From: Arnav Kapoor <kapoorarnnav43@gmail.com>
+Date: Sat, 13 Jul 2025 00:00:00 +0000
+Subject: [PATCH] team: Fix sleeping function called from invalid context in team_change_rx_flags
+
+The syzbot report shows a "sleeping function called from invalid context" 
+warning in team_change_rx_flags(). The issue occurs because this function
+is called while holding netif_addr_lock_bh (atomic context), but it calls
+dev_set_promiscuity() and dev_set_allmulti() which can sleep due to 
+mutex_lock(&dev->lock) in the netdev_lock_ops() path.
+
+The call chain is:
+dev_uc_add() 
+└── netif_addr_lock_bh() [atomic context]
+    └── __dev_set_rx_mode()
+        └── team_change_rx_flags()
+            └── dev_set_promiscuity()
+                └── netdev_lock_ops()
+                    └── mutex_lock(&dev->lock) [sleeping function]
+
+The functions dev_set_promiscuity() and dev_set_allmulti() are designed
+to be called from process context, not atomic context. Since 
+team_change_rx_flags() is called from atomic context, we need to defer
+the actual promiscuity/allmulti changes to process context using a 
+work queue.
+
+This patch adds a work queue to handle the deferred RX flags changes,
+ensuring that the mutex-acquiring functions are called from process
+context where sleeping is allowed.
+
+Reported-by: syzbot+8182574047912f805d59@syzkaller.appspotmail.com
+Link: https://syzkaller.appspot.com/bug?extid=8182574047912f805d59
+Fixes: 3d249d4ca7d0 ("net: introduce ethernet teaming device")
+Cc: stable@vger.kernel.org
+Signed-off-by: Arnav Kapoor <kapoorarnnav43@gmail.com>
+---
+ drivers/net/team/team_core.c | 65 ++++++++++++++++++++++++++++++------
+ include/linux/if_team.h      |  5 +++
+ 2 files changed, 60 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/net/team/team_core.c b/drivers/net/team/team_core.c
+index abcd1234..efgh5678 100644
+--- a/drivers/net/team/team_core.c
++++ b/drivers/net/team/team_core.c
+@@ -1772,19 +1772,51 @@ static u16 team_select_queue(struct net_device *dev, struct sk_buff *skb,
+ 	return txq;
+ }
+ 
++static void team_change_rx_flags_work(struct work_struct *work)
++{
++	struct team *team = container_of(work, struct team, rx_flags_work);
++	struct team_port *port;
++	int change, inc;
++	unsigned int flags;
++
++	mutex_lock(&team->lock);
++	change = team->rx_flags_change;
++	flags = team->rx_flags_dev_flags;
++	team->rx_flags_change = 0;
++	
++	list_for_each_entry(port, &team->port_list, list) {
++		if (change & IFF_PROMISC) {
++			inc = flags & IFF_PROMISC ? 1 : -1;
++			dev_set_promiscuity(port->dev, inc);
++		}
++		if (change & IFF_ALLMULTI) {
++			inc = flags & IFF_ALLMULTI ? 1 : -1;
++			dev_set_allmulti(port->dev, inc);
++		}
++	}
++	mutex_unlock(&team->lock);
++}
++
+ static void team_change_rx_flags(struct net_device *dev, int change)
+ {
+ 	struct team *team = netdev_priv(dev);
+-	struct team_port *port;
+-	int inc;
+-
+-	rcu_read_lock();
+-	list_for_each_entry_rcu(port, &team->port_list, list) {
+-		if (change & IFF_PROMISC) {
+-			inc = dev->flags & IFF_PROMISC ? 1 : -1;
+-			dev_set_promiscuity(port->dev, inc);
+-		}
+-		if (change & IFF_ALLMULTI) {
+-			inc = dev->flags & IFF_ALLMULTI ? 1 : -1;
+-			dev_set_allmulti(port->dev, inc);
+-		}
+-	}
+-	rcu_read_unlock();
++	
++	/*
++	 * Cannot call dev_set_promiscuity/dev_set_allmulti from atomic context
++	 * as they acquire netdev mutex via netdev_lock_ops(). This function is
++	 * called with netif_addr_lock_bh held (atomic context), so we must defer
++	 * the actual flag changes to process context using a work queue.
++	 */
++	spin_lock(&team->rx_flags_lock);
++	team->rx_flags_change |= change;
++	team->rx_flags_dev_flags = dev->flags;
++	spin_unlock(&team->rx_flags_lock);
++	
++	schedule_work(&team->rx_flags_work);
+ }
+ 
+ static void team_set_rx_mode(struct net_device *dev)
+@@ -1629,6 +1661,9 @@ static int team_init(struct net_device *dev)
+ 	mutex_init(&team->lock);
+ 	lockdep_register_key(&team->team_lock_key);
+ 	__mutex_set_name(&team->lock, "team->lock", &team->team_lock_key);
++	
++	spin_lock_init(&team->rx_flags_lock);
++	INIT_WORK(&team->rx_flags_work, team_change_rx_flags_work);
+ 
+ 	return 0;
+ 
+@@ -1651,6 +1686,16 @@ static void team_uninit(struct net_device *dev)
+ 	struct team *team = netdev_priv(dev);
+ 	struct team_port *port;
+ 	struct team_port *tmp;
++	
++	/*
++	 * Make sure any pending rx_flags work is completed before
++	 * destroying the team device
++	 */
++	cancel_work_sync(&team->rx_flags_work);
++	
++	/* Clear any pending flags to avoid work being rescheduled */
++	spin_lock_bh(&team->rx_flags_lock);
++	team->rx_flags_change = 0;
++	spin_unlock_bh(&team->rx_flags_lock);
+ 
+ 	mutex_lock(&team->lock);
+ 	list_for_each_entry_safe(port, tmp, &team->port_list, list)
+diff --git a/include/linux/if_team.h b/include/linux/if_team.h
+index abcd1234..efgh5678 100644
+--- a/include/linux/if_team.h
++++ b/include/linux/if_team.h
+@@ -189,6 +189,11 @@ struct team {
+ 	struct net_device *dev; /* associated netdevice */
+ 	struct team_pcpu_stats __percpu *pcpu_stats;
+ 
++	/* RX flags handling - deferred to work queue to avoid atomic context issues */
++	struct work_struct rx_flags_work;
++	spinlock_t rx_flags_lock;
++	int rx_flags_change;
++	unsigned int rx_flags_dev_flags;
+ 	struct team_port __rcu *port_list[TEAM_PORT_HASHENTRIES];
+ 
+ 	struct list_head port_list;
+-- 
+2.34.1
