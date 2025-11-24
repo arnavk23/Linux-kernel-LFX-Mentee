@@ -10,6 +10,9 @@ on:
       - main
       - '**'
 
+permissions:
+  contents: read
+
 jobs:
   markdown-lint:
     name: Markdown Linting
@@ -30,8 +33,9 @@ jobs:
         run: markdownlint '**/*.md' --ignore node_modules
 
   spellcheck:
-    name: Spell Check
+    name: Spell Check (Optional)
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -45,4 +49,4 @@ jobs:
         run: npm install -g cspell
 
       - name: Run spell check on documentation
-        run: cspell "**/*.md" --no-progress || true
+        run: cspell "**/*.md" --no-progress
