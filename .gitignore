@@ -1,0 +1,58 @@
+# Linux kernel build artifacts
+*.o
+*.ko
+*.a
+*.so
+*.mod
+*.mod.c
+*.mod.o
+vmlinux
+vmlinux.o
+System.map
+.config
+.config.old
+.tmp_versions/
+modules.order
+Module.symvers
+*.cmd
+*.d
+
+# Kernel configuration backup
+*.old
+
+# Build directories
+out/
+dist/
+build/
+
+# Editor and IDE files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Node.js (for CI/linting tools)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Cache directories
+.cache/
+.npm/
+
+# Temporary files
+*.tmp
+*.bak
+*.log
+
+# Coverage reports
+coverage/
+.nyc_output/

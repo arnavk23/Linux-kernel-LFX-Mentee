@@ -1,0 +1,21 @@
+# Maintainers
+
+This file lists the maintainers and primary contacts for this repository.
+
+## Primary Maintainer
+
+- **arnavk23** - Repository Owner
+  - GitHub: [@arnavk23](https://github.com/arnavk23)
+  - Email: maintainers@localhost
+
+## Contact
+
+For questions, issues, or contributions, please:
+
+1. Open an issue on GitHub
+2. Submit a pull request following the [Contributing Guidelines](CONTRIBUTING.md)
+3. Contact the maintainers via email (listed above)
+
+## Acknowledgments
+
+This repository is part of the Linux Kernel LFX Mentorship program. Special thanks to all contributors and the Linux Foundation for supporting kernel development education.
