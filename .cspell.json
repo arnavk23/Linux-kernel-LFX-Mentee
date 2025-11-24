@@ -1,0 +1,23 @@
+{
+  "version": "0.2",
+  "language": "en",
+  "words": [
+    "Arnav",
+    "arnavk",
+    "Kumar",
+    "Mentee",
+    "mentees",
+    "markdownlint",
+    "cspell",
+    "vmlinux",
+    "config",
+    "signoff",
+    "subsystems"
+  ],
+  "ignorePaths": [
+    "node_modules",
+    ".git",
+    "*.pdf",
+    "*.png"
+  ]
+}
