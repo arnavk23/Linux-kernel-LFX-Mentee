@@ -1,0 +1,86 @@
+From f11640680f4c8b4f11b1c46b44a93ab81c69d751 Mon Sep 17 00:00:00 2001
+From: Arnav Kapoor <kapoorarnav43@gmail.com>
+Date: Mon, 1 Dec 2025 12:23:07 +0530
+Subject: [PATCH] fs: use READ_ONCE/WRITE_ONCE for inode timestamp accessors to
+ avoid benign KCSAN races
+
+Reported-by: syzbot+c81800...@syzkaller.appspotmail.com
+Signed-off-by: Arnav Kapoor <kapoorarnav43@gmail.com>
+---
+ include/linux/fs.h | 20 ++++++++++----------
+ 1 file changed, 10 insertions(+), 10 deletions(-)
+
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index dd3b57cfa..53f9e8282 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -1782,12 +1782,12 @@ struct timespec64 inode_set_ctime_deleg(struct inode *inode,
+ 
+ static inline time64_t inode_get_atime_sec(const struct inode *inode)
+ {
+-	return inode->i_atime_sec;
++	return READ_ONCE(inode->i_atime_sec);
+ }
+ 
+ static inline long inode_get_atime_nsec(const struct inode *inode)
+ {
+-	return inode->i_atime_nsec;
++	return READ_ONCE(inode->i_atime_nsec);
+ }
+ 
+ static inline struct timespec64 inode_get_atime(const struct inode *inode)
+@@ -1801,8 +1801,8 @@ static inline struct timespec64 inode_get_atime(const struct inode *inode)
+ static inline struct timespec64 inode_set_atime_to_ts(struct inode *inode,
+ 						      struct timespec64 ts)
+ {
+-	inode->i_atime_sec = ts.tv_sec;
+-	inode->i_atime_nsec = ts.tv_nsec;
++	WRITE_ONCE(inode->i_atime_sec, ts.tv_sec);
++	WRITE_ONCE(inode->i_atime_nsec, ts.tv_nsec);
+ 	return ts;
+ }
+ 
+@@ -1817,12 +1817,12 @@ static inline struct timespec64 inode_set_atime(struct inode *inode,
+ 
+ static inline time64_t inode_get_mtime_sec(const struct inode *inode)
+ {
+-	return inode->i_mtime_sec;
++	return READ_ONCE(inode->i_mtime_sec);
+ }
+ 
+ static inline long inode_get_mtime_nsec(const struct inode *inode)
+ {
+-	return inode->i_mtime_nsec;
++	return READ_ONCE(inode->i_mtime_nsec);
+ }
+ 
+ static inline struct timespec64 inode_get_mtime(const struct inode *inode)
+@@ -1835,8 +1835,8 @@ static inline struct timespec64 inode_get_mtime(const struct inode *inode)
+ static inline struct timespec64 inode_set_mtime_to_ts(struct inode *inode,
+ 						      struct timespec64 ts)
+ {
+-	inode->i_mtime_sec = ts.tv_sec;
+-	inode->i_mtime_nsec = ts.tv_nsec;
++	WRITE_ONCE(inode->i_mtime_sec, ts.tv_sec);
++	WRITE_ONCE(inode->i_mtime_nsec, ts.tv_nsec);
+ 	return ts;
+ }
+ 
+@@ -1861,12 +1861,12 @@ static inline struct timespec64 inode_set_mtime(struct inode *inode,
+ 
+ static inline time64_t inode_get_ctime_sec(const struct inode *inode)
+ {
+-	return inode->i_ctime_sec;
++	return READ_ONCE(inode->i_ctime_sec);
+ }
+ 
+ static inline long inode_get_ctime_nsec(const struct inode *inode)
+ {
+-	return inode->i_ctime_nsec & ~I_CTIME_QUERIED;
++	return READ_ONCE(inode->i_ctime_nsec) & ~I_CTIME_QUERIED;
+ }
+ 
+ static inline struct timespec64 inode_get_ctime(const struct inode *inode)
+-- 
+2.43.0
+
